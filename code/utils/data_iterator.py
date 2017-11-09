@@ -32,6 +32,7 @@ from glob import glob
 from scipy import misc
 
 import numpy as np
+from sklearn.utils import compute_sample_weight
 from tensorflow.contrib.keras.python.keras.preprocessing.image import Iterator
 from tensorflow.contrib.keras.python.keras import backend as K
 
@@ -83,13 +84,23 @@ def shift_and_pad_augmentation(image, image_mask):
 
     return new_im, new_mask
 
+def flip_augmentation(image, image_mask):
+    new_im = np.fliplr(image)
+    new_mask = np.fliplr(image_mask)
+
+    return new_im, new_mask
 
 class BatchIteratorSimple(Iterator):
-    def __init__(self, data_folder, batch_size, image_shape,
-            num_classes=3, training=True, shuffle=True, seed=None, shift_aug=False):
+    def __init__(
+        self, data_folder, batch_size, image_shape,
+        num_classes=3, training=True, shuffle=True, seed=None,
+        shift_aug=False,
+        flip_aug=True
+        ):
 
         self.num_classes = num_classes
         self.shift_aug = shift_aug
+        self.flip_aug = flip_aug
         self.data_folder = data_folder
         self.batch_size = batch_size
         self.training = training
@@ -119,10 +130,11 @@ class BatchIteratorSimple(Iterator):
         # the indexing of each batch.
         with self.lock:
           index_array, current_index, current_batch_size = next(
-              self.index_generator)
+              self.index_generator
+          )
         # The transformation of images is not under thread lock
         # so it can be done in parallel
-        
+
         batch_x = np.zeros((current_batch_size,) + self.image_shape, dtype=K.floatx())
 
 
@@ -145,12 +157,17 @@ class BatchIteratorSimple(Iterator):
                 continue
 
             else:
-                gt_image = misc.imread(file_tuple[1]).clip(0,1) 
+                gt_image = misc.imread(file_tuple[1]).clip(0,1)
                 if gt_image.shape[0] != self.image_shape[0]:
                     gt_image = misc.imresize(gt_image, self.image_shape)
 
-                #if self.shift_aug:
-                #    image, gt_image = shift_and_pad_augmentation(image, gt_image)
+                # Do augmentation:
+                if np.random.uniform() > 0.5:
+                    if self.shift_aug:
+                        image, gt_image = shift_and_pad_augmentation(image, gt_image)
+
+                    if self.flip_aug:
+                        image, gt_image = flip_augmentation(image, gt_image)
 
                 image = preprocess_input(image.astype(np.float32))
                 batch_x[e,:,:,:] = image
@@ -161,4 +178,17 @@ class BatchIteratorSimple(Iterator):
             return batch_x
 
         else:
-            return batch_x, batch_y
+            """
+            batch_sample_weights = compute_sample_weight(
+                'balanced',
+                (
+                    batch_y.reshape(
+                        (-1, self.num_classes)
+                    ) * np.arange(self.num_classes)
+                ).sum(axis = 1)
+            ).reshape(
+                (current_batch_size, -1)
+            ).mean(axis = 1)
+            return (batch_x, batch_y, batch_sample_weights)
+            """
+            return (batch_x, batch_y)

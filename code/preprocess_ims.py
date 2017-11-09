@@ -57,7 +57,7 @@ def move_labels(input_folder, output_folder, fold_id):
 
     output_folder = os.path.join(output_folder, 'masks')
     make_dir_if_not_exist(output_folder)
-    cam2, cam3, cam4 = get_mask_files(files) 
+    cam2, cam3, cam4 = get_mask_files(files)
 
     for e,i in enumerate(cam2):
         fname_parts = i.split(os.sep)
@@ -109,7 +109,18 @@ def combine_masks(processed_folder):
         new_fname = base_name[:ind] + 'mask'+ base_name[ind+4:]
 
         dir_base = str(os.sep).join(i.split(str(os.sep))[:-1])
-        misc.imsave(os.path.join(dir_base, new_fname), im)
+
+        # Keep only images containing hero:
+        if (argmin==2).sum() > 0.0:
+            misc.imsave(os.path.join(dir_base, new_fname), im)
+        else:
+            os.remove(
+                os.path.join(
+                    os.path.join(processed_folder, 'images'),
+                    base_name[:ind] + 'cam1'+ base_name[ind+4:-4] + '.jpeg'
+                )
+            )
+
         os.remove(i)
         os.remove(cam3[e])
         os.remove(cam4[e])
@@ -118,9 +129,9 @@ def combine_masks(processed_folder):
 def get_im_data(base_path):
     folds = glob.glob(os.path.join(base_path, '*', '*'))
     indicator_dict = dict()
-    
+
     is_val = lambda x: x.find('validation') != -1
-    
+
     for f in folds:
         files = glob.glob(os.path.join(f, '*','*.png'))
         if len(files) == 0:
@@ -134,7 +145,7 @@ if __name__ == '__main__':
     raw_data = os.path.join('..', 'data', 'raw_sim_data')
     proc_data = os.path.join('..', 'data', 'processed_sim_data')
 
-    indicator_dict = get_im_data(raw_data) 
+    indicator_dict = get_im_data(raw_data)
 
     out_val_dir = os.path.join(proc_data, 'validation')
     out_train_dir = os.path.join(proc_data, 'train')
@@ -145,10 +156,10 @@ if __name__ == '__main__':
             continue
 
         # validation
-        if i[1][1]: 
+        if i[1][1]:
              move_png_to_jpeg(i[0], out_val_dir, e)
              move_labels(i[0], out_val_dir, e)
-        # train 
+        # train
         else:
              move_png_to_jpeg(i[0], out_train_dir, e)
              move_labels(i[0], out_train_dir, e)
