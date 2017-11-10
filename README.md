@@ -177,7 +177,7 @@ In this project, following image manipulations are used:
 
 1. The raw sim. image is converted to jpeg to reduce its storage size.
 2. Inside batch iterator, each image is standardized to have zero mean so as to facilitate training process.
-```
+```python
 def preprocess_input(x):
     x = x/255.
     x = x-0.5
@@ -185,7 +185,7 @@ def preprocess_input(x):
     return x
 ```
 3. Left-right flip is also added by myself to enlarge training & validation sets.
-```
+```python
 def flip_augmentation(image, image_mask):
     new_im = np.fliplr(image)
     new_mask = np.fliplr(image_mask)
