@@ -166,10 +166,10 @@ Here are my choices and reasons for model hyperparameters.
 
 #### 3. Comparison between 1×1 convolutional & fully-connected layers
 
-The difference between fully-convolutional & fully-connected layers are as follows.
+For image processing tasks, the difference between fully-connected & 1×1 convolutional layers are as follows.
 
-1. Fully-connected layers are good for image classification tasks. In this case, for decision making only global summary matters. So local spatial information can be safely aggregated through fully-connected layers.
-2. Fully-convolutional layers are suitable for pixelwise classification, i.e., scene segmentation tasks. In this situation local spatial information is crucial for pixelwise classification. So 1×1 convolutional layers should be used to keep the neighborhood info.
+1. Fully-connected layers are good for image classification tasks as last to output layers. For classification only image-wise summary statistics matter. So local spatial information can be safely aggregated through fully-connected layers to derive the final image-wise features for classification.
+2. 1×1 convolutional layers are suitable for local non-linear transformation as intermediate CNN layers. 1×1 convolution is good if you want to add further non-linearity to your model at the minimum cost of extra parameter size, as the case of Google Inception Net. For pixel-wise classification, 1×1 convolution should also be used to extract higher-level feature while still keep the local spatial information. After 1×1 convolution, higher-level features can be correctly propagated down to each pixel so as to finally be used as pixel-wise feature for pixel classification.
 
 #### 4. Data manipulation
 
@@ -233,3 +233,16 @@ According to the Jupyter notebook attained after an arduous training, the metric
 | Final Score | 0.4137 |
 
 They meet the performance requirement.
+
+---
+
+### Future Enhancements
+
+---
+
+From the iterative training process, imbalanced class distribution appears to be the main obstacle that hinders performance improvement.
+
+For future iterations, I think following improvements could be made upon current framework:
+
+1. More scene images containing target hero, especially those from far away view points, could be added to further boost hero detection performance.
+2. Pixel-wise weight could be used to further reduce the effects of skewed class distribution. This needs further hacking since currently Keras only supports image-wise weight not pixel-wise weight.
