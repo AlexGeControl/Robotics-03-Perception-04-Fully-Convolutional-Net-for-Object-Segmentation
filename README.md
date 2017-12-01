@@ -38,7 +38,30 @@ python follower.py model_weights
 
 ---
 
-#### 1. Network architecture
+#### 1. Convolutional layers used
+
+In this project two special convolution layers are used.
+
+The first one is **separable convolution layers** used in GoogLe Inception Net.
+
+<img src="writeup_images/separable-conv-a-plain.png" width="100%" alt="Plain Convolution"/>
+<img src="writeup_images/separable-conv-b-inception.png" width="100%" alt="Separable Convolution"/>
+<img src="writeup_images/separable-conv-c-comparison.png" width="100%" alt="Parameter Comparison"/>
+<img src="writeup_images/separable-conv-d-summary.png" width="100%" alt="Benefits Summary"/>
+
+In this type of layer, 1×1 convolution intermediate layer, the so-called network in network, is used to reduce computation workload
+while maintains global network performance. This is very useful for intermediate layer with significant input depth.
+
+The second one is **deconvolution/transposed convolution layers** described in the reference paper.
+
+<img src="writeup_images/transposed-conv-a-no-padding-no-strides.gif" width="100%" alt="No Padding & No Strides"/>
+<img src="writeup_images/transposed-conv-b-padding-strides.gif" width="100%" alt="Padding & Strides"/>
+<img src="writeup_images/transposed-conv-c-no-padding-strides.gif" width="100%" alt="No Padding & Strides"/>
+
+This type of layer helps to propagate high-level features down to low-levels.
+In this project upsampling through bilinear transform, together with padding is used to dilate smaller size input for larget size output.
+
+#### 2. Network architecture
 
 <img src="writeup_images/model.png" width="100%" alt="Network Architecture"/>
 
